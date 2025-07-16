@@ -1,6 +1,6 @@
 ﻿namespace Api_restaurant.Classes
 {
-    public class articles
+    public class Articles
     {
         public string? Nom { get; set; }
         public int Prix { get; set; }
