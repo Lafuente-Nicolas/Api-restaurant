@@ -4,7 +4,7 @@
         {
             public int Id { get; set; }
 
-            public Clients { get; set; }
+            public Clients Clients { get; set; } 
 
         public List<Articles> Articles { get; set; } = new List<Articles>();
             public DateTime DateCommande { get; set; } = DateTime.Now;
