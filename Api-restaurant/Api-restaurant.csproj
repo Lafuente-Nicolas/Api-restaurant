@@ -7,4 +7,8 @@
     <RootNamespace>Api_restaurant</RootNamespace>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Folder Include="Classes\" />
+  </ItemGroup>
+
 </Project>
