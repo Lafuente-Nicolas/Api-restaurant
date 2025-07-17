@@ -176,6 +176,54 @@ app.MapDelete("/api/commandes/{id}", async (int id, RestaurantDb db) =>
 .WithTags("Commandes")
 .WithMetadata(new SwaggerOperationAttribute(summary: "Supprime une commande", description: "Supprime une commande par ID"));
 
+// GET tous les articles
+app.MapGet("/articles", async (RestaurantDb db) =>
+{
+    var articles = await db.Articles.ToListAsync();
+    return Results.Ok(articles);
+});
+
+// GET articles par ID
+app.MapGet("/articles/{id}", async (int id, RestaurantDb db) =>
+{
+    var articles = await db.Articles.FindAsync(id);
+    return articles is not null ? Results.Ok(articles) : Results.NotFound();
+});
+
+// POST ajouter un article
+app.MapPost("/articles", async (Article article, RestaurantDb db) =>
+{
+    db.Articles.Add(article);
+    await db.SaveChangesAsync();
+    return Results.Created($"/clients/{article.Id}", article);
+});
+
+// PUT modifier un article
+app.MapPut("/articles/{id}", async (int id, Article updatedArticle, RestaurantDb db) =>
+{
+    var article = await db.Articles.FindAsync(id);
+    if (article is null) return Results.NotFound();
+
+    article.Nom = updatedArticle.Nom;
+    article.Prix = updatedArticle.Prix;
+    article.Categorie = updatedArticle.Categorie;
+
+    await db.SaveChangesAsync();
+    return Results.Ok(article);
+});
+
+// DELETE supprimer un article
+app.MapDelete("/articles/{id}", async (int id, RestaurantDb db) =>
+{
+    var article = await db.Articles.FindAsync(id);
+    if (article is null) return Results.NotFound();
+
+    db.Articles.Remove(article);
+    await db.SaveChangesAsync();
+    return Results.NoContent();
+});
+
+
 DbInitializer.Database(app.Services);
 
 
