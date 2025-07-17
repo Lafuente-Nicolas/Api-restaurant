@@ -39,6 +39,59 @@ if (app.Environment.IsDevelopment())
         c.RoutePrefix = "";
     });
 }
+
+
+// GET tous les clients
+app.MapGet("/clients", async (RestaurantDb db) =>
+{
+    var clients = await db.Clients.ToListAsync();
+    return Results.Ok(clients);
+});
+
+// GET client par ID
+app.MapGet("/clients/{id}", async (int id, RestaurantDb db) =>
+{
+    var client = await db.Clients.FindAsync(id);
+    return client is not null ? Results.Ok(client) : Results.NotFound();
+});
+
+// POST ajouter un client
+app.MapPost("/clients", async (Client client, RestaurantDb db) =>
+{
+    db.Clients.Add(client);
+    await db.SaveChangesAsync();
+    return Results.Created($"/clients/{client.Id}", client);
+});
+
+// PUT modifier un client
+app.MapPut("/clients/{id}", async (int id, Client updatedClient, RestaurantDb db) =>
+{
+    var client = await db.Clients.FindAsync(id);
+    if (client is null) return Results.NotFound();
+
+    client.Nom = updatedClient.Nom;
+    client.Prenom = updatedClient.Prenom;
+    client.NumeroDeRue = updatedClient.NumeroDeRue;
+    client.NomDeRue = updatedClient.NomDeRue;
+    client.CodePostal = updatedClient.CodePostal;
+    client.Ville = updatedClient.Ville;
+    client.Telephone = updatedClient.Telephone;
+
+    await db.SaveChangesAsync();
+    return Results.Ok(client);
+});
+
+// DELETE supprimer un client
+app.MapDelete("/clients/{id}", async (int id, RestaurantDb db) =>
+{
+    var client = await db.Clients.FindAsync(id);
+    if (client is null) return Results.NotFound();
+
+    db.Clients.Remove(client);
+    await db.SaveChangesAsync();
+    return Results.NoContent();
+});
+
 DbInitializer.Database(app.Services);
 
 app.Run();
