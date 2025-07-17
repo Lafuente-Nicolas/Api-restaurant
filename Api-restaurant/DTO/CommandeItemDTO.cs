@@ -11,7 +11,7 @@ namespace Api_restaurant.DTO
 
         // Constructeur
         public CommandeItemDTO() { }
-        public CommandeItemDTO(Commandes commandeItem) =>
+        public CommandeItemDTO(Commande commandeItem) =>
         (Id, clients, Articles, DateCommande) = (commandeItem.Id, commandeItem.clients, commandeItem.Articles, commandeItem.DateCommande);
     }
 

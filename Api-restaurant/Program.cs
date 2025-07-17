@@ -5,8 +5,7 @@ using Api_restaurant.Dto;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContext<RestaurantDb>(options =>
-    options.UseSqlite("Data Source=restaurant.db"));
+builder.Services.AddDbContext<RestaurantDb>(opt => opt.UseSqlite("Data Source=restaurant.db"));
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -25,3 +24,4 @@ if (app.Environment.IsDevelopment())
 app.MapGet("/", () => "Hello World!");
 */
 app.Run();
+

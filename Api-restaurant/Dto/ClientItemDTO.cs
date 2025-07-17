@@ -13,11 +13,10 @@ namespace Api_restaurant.Dto
         public string NomDeRue { get; set; }
         public int CodePostal { get; set; }
         public string Ville { get; set; }
-        public string? Categorie { get; set; }
 
         public ClientItemDTO() { }
         public ClientItemDTO(Client clientsItem) => 
             
-        (Id, Nom, Prenom, Telephone, Email, NumeroDeRue, NomDeRue, CodePostal, Ville, Categorie) = (clientsItem.Id, clientsItem.Nom, clientsItem.Prenom, clientsItem.Telephone , clientsItem.Email, clientsItem.NumeroDeRue, clientsItem.NomDeRue, clientsItem.CodePostal, clientsItem.Ville, clientsItem.Categorie);
+        (Id, Nom, Prenom, Telephone, Email, NumeroDeRue, NomDeRue, CodePostal, Ville) = (clientsItem.Id, clientsItem.Nom, clientsItem.Prenom, clientsItem.Telephone , clientsItem.Email, clientsItem.NumeroDeRue, clientsItem.NomDeRue, clientsItem.CodePostal, clientsItem.Ville);
     }
 }
