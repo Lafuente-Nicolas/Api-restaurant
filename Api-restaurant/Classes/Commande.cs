@@ -1,12 +1,12 @@
 ﻿namespace Api_restaurant.Classes
     {
-        public class Commandes
+        public class Commande
         {
             public int Id { get; set; }
 
-            public Clients clients { get; set; } 
+            public Client clients { get; set; } 
 
-        public List<Articles> Articles { get; set; } = new List<Articles>();
+        public List<Article> Articles { get; set; } = new List<Article>();
 
             public DateTime DateCommande { get; set; } = DateTime.Now;
 

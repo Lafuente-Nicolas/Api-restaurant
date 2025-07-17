@@ -1,6 +1,6 @@
 ﻿namespace Api_restaurant.Classes
 {
-    public class Clients
+    public class Client
     {
         public int Id { get; set; }
         public string? Nom { get; set; }
@@ -11,6 +11,5 @@
         public string NomDeRue{ get; set; }
         public int CodePostal { get; set; }
         public string Ville { get; set; }
-        public string? Categorie { get; set; }
     }
 }

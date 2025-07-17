@@ -16,7 +16,7 @@ namespace Api_restaurant.Dto
         public string? Categorie { get; set; }
 
         public ClientItemDTO() { }
-        public ClientItemDTO(Clients clientsItem) => 
+        public ClientItemDTO(Client clientsItem) => 
             
         (Id, Nom, Prenom, Telephone, Email, NumeroDeRue, NomDeRue, CodePostal, Ville, Categorie) = (clientsItem.Id, clientsItem.Nom, clientsItem.Prenom, clientsItem.Telephone , clientsItem.Email, clientsItem.NumeroDeRue, clientsItem.NomDeRue, clientsItem.CodePostal, clientsItem.Ville, clientsItem.Categorie);
     }
