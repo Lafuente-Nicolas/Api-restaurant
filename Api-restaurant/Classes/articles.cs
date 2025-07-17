@@ -6,5 +6,6 @@
         public string? Nom { get; set; }
         public int Prix { get; set; }
         public string? Categorie { get; set; }
+        public string? Secret { get; set; }
     }
 }
