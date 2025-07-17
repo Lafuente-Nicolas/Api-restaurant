@@ -7,6 +7,7 @@
             public Clients Clients { get; set; } 
 
         public List<Articles> Articles { get; set; } = new List<Articles>();
+
             public DateTime DateCommande { get; set; } = DateTime.Now;
 
             public decimal CalculerTotal()
