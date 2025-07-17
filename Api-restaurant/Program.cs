@@ -1,6 +1,7 @@
 using Api_restaurant.Classes;
 using Api_restaurant.Data;
 using Api_restaurant.Dto;
+using Api_restaurant.DTO;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Annotations;
@@ -92,7 +93,91 @@ app.MapDelete("/clients/{id}", async (int id, RestaurantDb db) =>
     return Results.NoContent();
 });
 
+// ? ENDPOINTS POUR LA GESTION DES COMMANDES
+
+// GET : Récupère toutes les commandes
+app.MapGet("/api/commandes", async (RestaurantDb db) =>
+{
+    var commandes = await db.Commandes
+        .Include(c => c.clients)
+        .Include(c => c.Articles)
+        .ToListAsync();
+
+    var result = commandes.Select(c => new CommandeItemDTO(c));
+    return Results.Ok(result);
+})
+.WithName("GetAllCommandes")
+.WithTags("Commandes")
+.WithMetadata(new SwaggerOperationAttribute(summary: "Récupère toutes les commandes", description: "Retourne la liste complète des commandes"));
+
+// GET : Récupère une commande par ID
+app.MapGet("/api/commandes/{id}", async (int id, RestaurantDb db) =>
+{
+    var commande = await db.Commandes
+        .Include(c => c.clients)
+        .Include(c => c.Articles)
+        .FirstOrDefaultAsync(c => c.Id == id);
+
+    if (commande is null) return Results.NotFound();
+    return Results.Ok(new CommandeItemDTO(commande));
+})
+.WithName("GetCommandeById")
+.WithTags("Commandes")
+.WithMetadata(new SwaggerOperationAttribute(summary: "Récupère une commande par ID", description: "Retourne une commande spécifique"));
+
+// POST : Crée une nouvelle commande
+app.MapPost("/api/commandes", async (CommandeItemDTO dto, RestaurantDb db) =>
+{
+    var commande = new Commande
+    {
+        clients = dto.clients,
+        Articles = dto.Articles,
+        DateCommande = dto.DateCommande
+    };
+
+    db.Commandes.Add(commande);
+    await db.SaveChangesAsync();
+
+    return Results.Created($"/api/commandes/{commande.Id}", new CommandeItemDTO(commande));
+})
+.WithName("CreateCommande")
+.WithTags("Commandes")
+.WithMetadata(new SwaggerOperationAttribute(summary: "Crée une nouvelle commande", description: "Ajoute une commande dans la base de données"));
+
+// PUT : Met à jour une commande existante
+app.MapPut("/api/commandes/{id}", async (int id, CommandeItemDTO dto, RestaurantDb db) =>
+{
+    var commande = await db.Commandes.Include(c => c.clients).Include(c => c.Articles).FirstOrDefaultAsync(c => c.Id == id);
+    if (commande is null) return Results.NotFound();
+
+    commande.clients = dto.clients;
+    commande.Articles = dto.Articles;
+    commande.DateCommande = dto.DateCommande;
+
+    await db.SaveChangesAsync();
+    return Results.NoContent();
+})
+.WithName("UpdateCommande")
+.WithTags("Commandes")
+.WithMetadata(new SwaggerOperationAttribute(summary: "Met à jour une commande", description: "Modifie une commande existante"));
+
+// DELETE : Supprime une commande
+app.MapDelete("/api/commandes/{id}", async (int id, RestaurantDb db) =>
+{
+    var commande = await db.Commandes.FindAsync(id);
+    if (commande is null) return Results.NotFound();
+
+    db.Commandes.Remove(commande);
+    await db.SaveChangesAsync();
+
+    return Results.NoContent();
+})
+.WithName("DeleteCommande")
+.WithTags("Commandes")
+.WithMetadata(new SwaggerOperationAttribute(summary: "Supprime une commande", description: "Supprime une commande par ID"));
+
 DbInitializer.Database(app.Services);
+
 
 app.Run();
 
