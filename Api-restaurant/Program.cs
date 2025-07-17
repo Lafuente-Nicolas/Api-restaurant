@@ -212,6 +212,16 @@ app.MapPut("/articles/{id}", async (int id, Article updatedArticle, RestaurantDb
     return Results.Ok(article);
 });
 
+// DELETE supprimer un article
+app.MapDelete("/articles/{id}", async (int id, RestaurantDb db) =>
+{
+    var article = await db.Articles.FindAsync(id);
+    if (article is null) return Results.NotFound();
+
+    db.Articles.Remove(article);
+    await db.SaveChangesAsync();
+    return Results.NoContent();
+});
 
 
 DbInitializer.Database(app.Services);
