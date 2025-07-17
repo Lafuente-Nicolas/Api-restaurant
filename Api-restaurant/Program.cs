@@ -19,7 +19,7 @@ builder.Services.AddSwaggerGen(c =>
         Description = "Une API pour gérer les commandes d'un restaurant",
         Contact = new OpenApiContact
         {
-            Name = "Loïc, Abdellag , Othman, Nicolas",
+            Name = "Loïc, Abdellah , Othman, Nicolas",
             Email = "nephtyse19@hotmail.fr",
             Url = new Uri("https://github.com/abdellah59/Api-restaurant")
         }
@@ -39,5 +39,7 @@ if (app.Environment.IsDevelopment())
         c.RoutePrefix = "";
     });
 }
+DbInitializer.Database(app.Services);
+
 app.Run();
 
