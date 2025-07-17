@@ -190,6 +190,27 @@ app.MapGet("/articles/{id}", async (int id, RestaurantDb db) =>
     return articles is not null ? Results.Ok(articles) : Results.NotFound();
 });
 
+// POST ajouter un article
+app.MapPost("/articles", async (Article article, RestaurantDb db) =>
+{
+    db.Articles.Add(article);
+    await db.SaveChangesAsync();
+    return Results.Created($"/clients/{article.Id}", article);
+});
+
+// PUT modifier un article
+app.MapPut("/articles/{id}", async (int id, Article updatedArticle, RestaurantDb db) =>
+{
+    var article = await db.Articles.FindAsync(id);
+    if (article is null) return Results.NotFound();
+
+    article.Nom = updatedArticle.Nom;
+    article.Prix = updatedArticle.Prix;
+    article.Categorie = updatedArticle.Categorie;
+
+    await db.SaveChangesAsync();
+    return Results.Ok(article);
+});
 
 
 
