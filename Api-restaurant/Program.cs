@@ -176,6 +176,23 @@ app.MapDelete("/api/commandes/{id}", async (int id, RestaurantDb db) =>
 .WithTags("Commandes")
 .WithMetadata(new SwaggerOperationAttribute(summary: "Supprime une commande", description: "Supprime une commande par ID"));
 
+// GET tous les articles
+app.MapGet("/articles", async (RestaurantDb db) =>
+{
+    var articles = await db.Articles.ToListAsync();
+    return Results.Ok(articles);
+});
+
+// GET articles par ID
+app.MapGet("/articles/{id}", async (int id, RestaurantDb db) =>
+{
+    var articles = await db.Articles.FindAsync(id);
+    return articles is not null ? Results.Ok(articles) : Results.NotFound();
+});
+
+
+
+
 DbInitializer.Database(app.Services);
 
 
