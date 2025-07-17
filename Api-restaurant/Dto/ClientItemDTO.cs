@@ -5,14 +5,14 @@ namespace Api_restaurant.Dto
     public class ClientItemDTO
     {
         public int Id { get; set; }
-        public string? Nom { get; set; }
-        public string? Prenom { get; set; }
-        public int Telephone { get; set; }
-        public string Email { get; set; }
-        public int NumeroDeRue { get; set; }
-        public string NomDeRue { get; set; }
-        public int CodePostal { get; set; }
-        public string Ville { get; set; }
+        public string Nom { get; set; }
+        public string Prenom { get; set; }
+        public string Telephone { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string NumeroDeRue { get; set; } = string.Empty;
+        public string NomDeRue { get; set; } = string.Empty;
+        public string CodePostal { get; set; } = string.Empty;
+        public string Ville { get; set; } = string.Empty;
 
         public ClientItemDTO() { }
         public ClientItemDTO(Client clientsItem) => 
