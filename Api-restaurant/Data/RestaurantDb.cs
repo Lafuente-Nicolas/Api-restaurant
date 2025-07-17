@@ -15,6 +15,13 @@ namespace Api_restaurant.Data
         public DbSet<Commande> Commandes => Set<Commande>();
         public DbSet<CommandeArticle> CommandeArticles => Set<CommandeArticle>();
 
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
 
+            // Définir une clé primaire composite sur CommandeArticle
+            modelBuilder.Entity<CommandeArticle>()
+                .HasKey(ca => new { ca.CommandeId, ca.ArticleId });
+        }
     }
 }
