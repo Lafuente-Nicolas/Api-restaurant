@@ -7,5 +7,8 @@
         public decimal Prix { get; set; }
         public string? Categorie { get; set; }
         public string? Secret { get; set; }
+
+        public List<CommandeArticle> CommandeArticles { get; set; } = new();
+
     }
 }

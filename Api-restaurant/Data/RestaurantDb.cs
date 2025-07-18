@@ -22,6 +22,9 @@ namespace Api_restaurant.Data
             // Définir une clé primaire composite sur CommandeArticle
             modelBuilder.Entity<CommandeArticle>()
                 .HasKey(ca => new { ca.CommandeId, ca.ArticleId });
+
+
+
         }
     }
 }

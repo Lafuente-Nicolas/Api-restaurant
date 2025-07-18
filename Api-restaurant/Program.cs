@@ -5,6 +5,7 @@ using Api_restaurant.DTO;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Annotations;
+using System;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,10 +18,10 @@ builder.Services.AddSwaggerGen(c =>
     {
         Title = "Restaurant API",
         Version = "v1",
-        Description = "Une API pour gérer les commandes d'un restaurant",
+        Description = "Une API pour gï¿½rer les commandes d'un restaurant",
         Contact = new OpenApiContact
         {
-            Name = "Loïc, Abdellah , Othman, Nicolas",
+            Name = "Loï¿½c, Abdellah , Othman, Nicolas",
             Email = "nephtyse19@hotmail.fr",
             Url = new Uri("https://github.com/abdellah59/Api-restaurant")
         }
@@ -93,88 +94,97 @@ app.MapDelete("/clients/{id}", async (int id, RestaurantDb db) =>
     return Results.NoContent();
 });
 
-// ? ENDPOINTS POUR LA GESTION DES COMMANDES
+// ENDPOINTS POUR LA GESTION DES COMMANDES
 
-// GET : Récupère toutes les commandes
-app.MapGet("/api/commandes", async (RestaurantDb db) =>
+// Endpoint pour crï¿½er une commande
+
+app.MapPost("/commandes", async (CommandeItemDTO dto, RestaurantDb db) =>
 {
-    var commandes = await db.Commandes
-        .Include(c => c.clients)
-        .Include(c => c.Articles)
+    if (dto.ArticleIds == null || !dto.ArticleIds.Any())
+    {
+        return Results.BadRequest("Une commande doit contenir au moins un article.");
+    }
+
+    var client = await db.Clients.FindAsync(dto.ClientsId);
+    if (client == null)
+        return Results.NotFound("Client introuvable");
+
+    var articles = await db.Articles
+        .Where(a => dto.ArticleIds.Contains(a.Id))
         .ToListAsync();
 
-    var result = commandes.Select(c => new CommandeItemDTO(c));
-    return Results.Ok(result);
-})
-.WithName("GetAllCommandes")
-.WithTags("Commandes")
-.WithMetadata(new SwaggerOperationAttribute(summary: "Récupère toutes les commandes", description: "Retourne la liste complète des commandes"));
+    if (articles.Count != dto.ArticleIds.Count)
+        return Results.BadRequest("Un ou plusieurs articles sont invalides");
 
-// GET : Récupère une commande par ID
-app.MapGet("/api/commandes/{id}", async (int id, RestaurantDb db) =>
-{
-    var commande = await db.Commandes
-        .Include(c => c.clients)
-        .Include(c => c.Articles)
-        .FirstOrDefaultAsync(c => c.Id == id);
+    var montantTotal = articles.Sum(a => a.Prix);
 
-    if (commande is null) return Results.NotFound();
-    return Results.Ok(new CommandeItemDTO(commande));
-})
-.WithName("GetCommandeById")
-.WithTags("Commandes")
-.WithMetadata(new SwaggerOperationAttribute(summary: "Récupère une commande par ID", description: "Retourne une commande spécifique"));
-
-// POST : Crée une nouvelle commande
-app.MapPost("/api/commandes", async (CommandeItemDTO dto, RestaurantDb db) =>
-{
     var commande = new Commande
     {
-        clients = dto.clients,
-        Articles = dto.Articles,
-        DateCommande = dto.DateCommande
+        ClientId = dto.ClientsId,
+        CommandeArticles = dto.ArticleIds.Select(id => new CommandeArticle
+        {
+            ArticleId = id
+        }).ToList(),
+        MontantTotal = montantTotal,
+        StatutLivraison = "En cours"
     };
 
     db.Commandes.Add(commande);
     await db.SaveChangesAsync();
 
-    return Results.Created($"/api/commandes/{commande.Id}", new CommandeItemDTO(commande));
-})
-.WithName("CreateCommande")
-.WithTags("Commandes")
-.WithMetadata(new SwaggerOperationAttribute(summary: "Crée une nouvelle commande", description: "Ajoute une commande dans la base de données"));
+    return Results.Created($"/commandes/{commande.Id}", commande);
+});
 
-// PUT : Met à jour une commande existante
-app.MapPut("/api/commandes/{id}", async (int id, CommandeItemDTO dto, RestaurantDb db) =>
+// Endpoint pour Consulter les commandes d'un client
+
+app.MapGet("/commandes-clients/{clientId}", async (int clientId, RestaurantDb db) =>
 {
-    var commande = await db.Commandes.Include(c => c.clients).Include(c => c.Articles).FirstOrDefaultAsync(c => c.Id == id);
-    if (commande is null) return Results.NotFound();
+    var commandes = await db.Commandes
+        .Where(c => c.ClientId == clientId)
+        .Include(c => c.CommandeArticles).ThenInclude(ca => ca.ArticleId)
+        .ToListAsync();
 
-    commande.clients = dto.clients;
-    commande.Articles = dto.Articles;
-    commande.DateCommande = dto.DateCommande;
+    return Results.Ok(commandes);
+});
 
-    await db.SaveChangesAsync();
-    return Results.NoContent();
-})
-.WithName("UpdateCommande")
-.WithTags("Commandes")
-.WithMetadata(new SwaggerOperationAttribute(summary: "Met à jour une commande", description: "Modifie une commande existante"));
 
-// DELETE : Supprime une commande
-app.MapDelete("/api/commandes/{id}", async (int id, RestaurantDb db) =>
+// Endpoint pour Consulter les commandes par date
+
+app.MapGet("/commandes/date/{date}", async (DateTime date, RestaurantDb db) =>
+{
+    var commandes = await db.Commandes
+        .Where(c => c.Date.Date == date.Date)
+        .Include(c => c.CommandeArticles).ThenInclude(ca => ca.ArticleId)
+        .ToListAsync();
+
+    return Results.Ok(commandes);
+});
+
+// Endpoint pot Modifier le statut de livraison
+
+app.MapPut("/commandes/{id}/statut", async (int id, string nouveauStatut, RestaurantDb db) =>
 {
     var commande = await db.Commandes.FindAsync(id);
-    if (commande is null) return Results.NotFound();
+    if (commande == null)
+        return Results.NotFound();
 
-    db.Commandes.Remove(commande);
+    commande.StatutLivraison = nouveauStatut;
     await db.SaveChangesAsync();
 
-    return Results.NoContent();
-})
-.WithName("DeleteCommande")
-.WithTags("Commandes")
-.WithMetadata(new SwaggerOperationAttribute(summary: "Supprime une commande", description: "Supprime une commande par ID"));
+    return Results.Ok(commande);
+});
+
+// Commandes en attente de livraison
+
+app.MapGet("/commandes/en-attente", async (RestaurantDb db) =>
+{
+    var commandes = await db.Commandes
+        .Where(c => c.StatutLivraison == "En cours")
+        .ToListAsync();
+
+    return Results.Ok(commandes);
+});
+
 
 // GET tous les articles
 app.MapGet("/articles", async (RestaurantDb db) =>

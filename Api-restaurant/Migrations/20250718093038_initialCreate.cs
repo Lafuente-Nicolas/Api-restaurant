@@ -6,24 +6,40 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Api_restaurant.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class initialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "Articles",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Nom = table.Column<string>(type: "TEXT", nullable: true),
+                    Prix = table.Column<decimal>(type: "TEXT", nullable: false),
+                    Categorie = table.Column<string>(type: "TEXT", nullable: true),
+                    Secret = table.Column<string>(type: "TEXT", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Articles", x => x.Id);
+                });
+
             migrationBuilder.CreateTable(
                 name: "Clients",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    Nom = table.Column<string>(type: "TEXT", nullable: true),
-                    Prenom = table.Column<string>(type: "TEXT", nullable: true),
-                    Telephone = table.Column<int>(type: "INTEGER", nullable: false),
+                    Nom = table.Column<string>(type: "TEXT", nullable: false),
+                    Prenom = table.Column<string>(type: "TEXT", nullable: false),
+                    Telephone = table.Column<string>(type: "TEXT", nullable: false),
                     Email = table.Column<string>(type: "TEXT", nullable: false),
-                    NumeroDeRue = table.Column<int>(type: "INTEGER", nullable: false),
+                    NumeroDeRue = table.Column<string>(type: "TEXT", nullable: false),
                     NomDeRue = table.Column<string>(type: "TEXT", nullable: false),
-                    CodePostal = table.Column<int>(type: "INTEGER", nullable: false),
+                    CodePostal = table.Column<string>(type: "TEXT", nullable: false),
                     Ville = table.Column<string>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
@@ -37,40 +53,20 @@ namespace Api_restaurant.Migrations
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    clientsId = table.Column<int>(type: "INTEGER", nullable: false),
-                    DateCommande = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    Date = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    MontantTotal = table.Column<decimal>(type: "TEXT", nullable: false),
+                    StatutLivraison = table.Column<string>(type: "TEXT", nullable: false),
+                    ClientId = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Commandes", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Commandes_Clients_clientsId",
-                        column: x => x.clientsId,
+                        name: "FK_Commandes_Clients_ClientId",
+                        column: x => x.ClientId,
                         principalTable: "Clients",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Articles",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Nom = table.Column<string>(type: "TEXT", nullable: true),
-                    Prix = table.Column<decimal>(type: "TEXT", nullable: false),
-                    Categorie = table.Column<string>(type: "TEXT", nullable: true),
-                    Secret = table.Column<string>(type: "TEXT", nullable: true),
-                    CommandeId = table.Column<int>(type: "INTEGER", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Articles", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Articles_Commandes_CommandeId",
-                        column: x => x.CommandeId,
-                        principalTable: "Commandes",
-                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -98,19 +94,14 @@ namespace Api_restaurant.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Articles_CommandeId",
-                table: "Articles",
-                column: "CommandeId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_CommandeArticles_ArticleId",
                 table: "CommandeArticles",
                 column: "ArticleId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Commandes_clientsId",
+                name: "IX_Commandes_ClientId",
                 table: "Commandes",
-                column: "clientsId");
+                column: "ClientId");
         }
 
         /// <inheritdoc />
