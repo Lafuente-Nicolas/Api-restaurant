@@ -49,14 +49,22 @@ app.MapGet("/clients", async (RestaurantDb db) =>
 {
     var clients = await db.Clients.ToListAsync();
     return Results.Ok(clients);
-});
+})
+
+.WithName("RechercherTousLesClients")
+.WithTags("Clients")
+.WithMetadata(new SwaggerOperationAttribute(summary: "Afficher tous les clients", description: "Afficher tous les clients qui se trouvent dans la base de données"));
 
 // GET client par ID
 app.MapGet("/clients/{id}", async (int id, RestaurantDb db) =>
 {
     var client = await db.Clients.FindAsync(id);
     return client is not null ? Results.Ok(client) : Results.NotFound();
-});
+})
+
+.WithName("RechercherClientsId")
+.WithTags("Clients")
+.WithMetadata(new SwaggerOperationAttribute(summary: "Rechercher un client par ID", description: "Rechercher un client par son ID dans la base de données"));
 
 // POST ajouter un client
 app.MapPost("/clients", async (Client client, RestaurantDb db) =>
@@ -64,7 +72,11 @@ app.MapPost("/clients", async (Client client, RestaurantDb db) =>
     db.Clients.Add(client);
     await db.SaveChangesAsync();
     return Results.Created($"/clients/{client.Id}", client);
-});
+})
+
+.WithName("CreationClients")
+.WithTags("Clients")
+.WithMetadata(new SwaggerOperationAttribute(summary: "Crée un nouveau client", description: "Ajoute un client à la base de données"));
 
 // PUT modifier un client
 app.MapPut("/clients/{id}", async (int id, Client updatedClient, RestaurantDb db) =>
@@ -82,7 +94,11 @@ app.MapPut("/clients/{id}", async (int id, Client updatedClient, RestaurantDb db
 
     await db.SaveChangesAsync();
     return Results.Ok(client);
-});
+})
+
+.WithName("ModifierClients")
+.WithTags("Clients")
+.WithMetadata(new SwaggerOperationAttribute(summary: "Modifier les données d'un client", description: "Modifier toutes les données qui composent un client"));
 
 // DELETE supprimer un client
 app.MapDelete("/clients/{id}", async (int id, RestaurantDb db) =>
@@ -93,7 +109,11 @@ app.MapDelete("/clients/{id}", async (int id, RestaurantDb db) =>
     db.Clients.Remove(client);
     await db.SaveChangesAsync();
     return Results.NoContent();
-});
+})
+
+.WithName("SupprimerClients")
+.WithTags("Clients")
+.WithMetadata(new SwaggerOperationAttribute(summary: "Supprimer un client", description: "Supprimer un client de la base de donnée"));
 
 // ENDPOINTS POUR LA GESTION DES COMMANDES
 
