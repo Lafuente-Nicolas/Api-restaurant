@@ -141,7 +141,7 @@ app.MapGet("/commandes-clients/{clientId}", async (int clientId, RestaurantDb db
 {
     var commandes = await db.Commandes
         .Where(c => c.ClientId == clientId)
-        .Include(c => c.CommandeArticles).ThenInclude(ca => ca.Article)
+        .Include(c => c.CommandeArticles).ThenInclude(ca => ca.ArticleId)
         .ToListAsync();
 
     return Results.Ok(commandes);
@@ -154,7 +154,7 @@ app.MapGet("/commandes/date/{date}", async (DateTime date, RestaurantDb db) =>
 {
     var commandes = await db.Commandes
         .Where(c => c.Date.Date == date.Date)
-        .Include(c => c.CommandeArticles).ThenInclude(ca => ca.Article)
+        .Include(c => c.CommandeArticles).ThenInclude(ca => ca.ArticleId)
         .ToListAsync();
 
     return Results.Ok(commandes);
@@ -180,7 +180,6 @@ app.MapGet("/commandes/en-attente", async (RestaurantDb db) =>
 {
     var commandes = await db.Commandes
         .Where(c => c.StatutLivraison == "En cours")
-        .Include(c => c.Client)
         .ToListAsync();
 
     return Results.Ok(commandes);

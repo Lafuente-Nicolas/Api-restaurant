@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Api_restaurant.Migrations
 {
     [DbContext(typeof(RestaurantDb))]
-    [Migration("20250717100245_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250718093038_initialCreate")]
+    partial class initialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -29,9 +29,6 @@ namespace Api_restaurant.Migrations
                     b.Property<string>("Categorie")
                         .HasColumnType("TEXT");
 
-                    b.Property<int?>("CommandeId")
-                        .HasColumnType("INTEGER");
-
                     b.Property<string>("Nom")
                         .HasColumnType("TEXT");
 
@@ -43,8 +40,6 @@ namespace Api_restaurant.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CommandeId");
-
                     b.ToTable("Articles");
                 });
 
@@ -54,28 +49,33 @@ namespace Api_restaurant.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("CodePostal")
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("CodePostal")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Nom")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("NomDeRue")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("NumeroDeRue")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Prenom")
+                    b.Property<string>("NumeroDeRue")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("Telephone")
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("Prenom")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Telephone")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Ville")
                         .IsRequired()
@@ -92,15 +92,22 @@ namespace Api_restaurant.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateTime>("DateCommande")
+                    b.Property<int>("ClientId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("Date")
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("clientsId")
-                        .HasColumnType("INTEGER");
+                    b.Property<decimal>("MontantTotal")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("StatutLivraison")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("clientsId");
+                    b.HasIndex("ClientId");
 
                     b.ToTable("Commandes");
                 });
@@ -120,34 +127,27 @@ namespace Api_restaurant.Migrations
                     b.ToTable("CommandeArticles");
                 });
 
-            modelBuilder.Entity("Api_restaurant.Classes.Article", b =>
-                {
-                    b.HasOne("Api_restaurant.Classes.Commande", null)
-                        .WithMany("Articles")
-                        .HasForeignKey("CommandeId");
-                });
-
             modelBuilder.Entity("Api_restaurant.Classes.Commande", b =>
                 {
-                    b.HasOne("Api_restaurant.Classes.Client", "clients")
-                        .WithMany()
-                        .HasForeignKey("clientsId")
+                    b.HasOne("Api_restaurant.Classes.Client", "Client")
+                        .WithMany("Commandes")
+                        .HasForeignKey("ClientId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("clients");
+                    b.Navigation("Client");
                 });
 
             modelBuilder.Entity("Api_restaurant.Classes.CommandeArticle", b =>
                 {
                     b.HasOne("Api_restaurant.Classes.Article", "Article")
-                        .WithMany()
+                        .WithMany("CommandeArticles")
                         .HasForeignKey("ArticleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Api_restaurant.Classes.Commande", "Commande")
-                        .WithMany()
+                        .WithMany("CommandeArticles")
                         .HasForeignKey("CommandeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -157,9 +157,19 @@ namespace Api_restaurant.Migrations
                     b.Navigation("Commande");
                 });
 
+            modelBuilder.Entity("Api_restaurant.Classes.Article", b =>
+                {
+                    b.Navigation("CommandeArticles");
+                });
+
+            modelBuilder.Entity("Api_restaurant.Classes.Client", b =>
+                {
+                    b.Navigation("Commandes");
+                });
+
             modelBuilder.Entity("Api_restaurant.Classes.Commande", b =>
                 {
-                    b.Navigation("Articles");
+                    b.Navigation("CommandeArticles");
                 });
 #pragma warning restore 612, 618
         }

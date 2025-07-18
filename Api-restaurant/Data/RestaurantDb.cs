@@ -24,16 +24,7 @@ namespace Api_restaurant.Data
                 .HasKey(ca => new { ca.CommandeId, ca.ArticleId });
 
 
-            // Relations
-            modelBuilder.Entity<CommandeArticle>()
-                .HasOne(ca => ca.Commande)
-                .WithMany(c => c.CommandeArticles)
-                .HasForeignKey(ca => ca.CommandeId);
 
-            modelBuilder.Entity<CommandeArticle>()
-                .HasOne(ca => ca.Article)
-                .WithMany(a => a.CommandeArticles)
-                .HasForeignKey(ca => ca.ArticleId);
         }
     }
 }
