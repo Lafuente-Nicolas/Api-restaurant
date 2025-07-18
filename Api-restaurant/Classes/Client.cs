@@ -12,7 +12,5 @@
         public string CodePostal { get; set; } = string.Empty;
         public string Ville { get; set; } = string.Empty;
 
-        public List<Commande> Commandes { get; set; } = new();
-
     }
 }

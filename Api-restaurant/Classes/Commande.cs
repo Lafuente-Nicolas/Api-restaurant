@@ -8,7 +8,6 @@
         public string StatutLivraison { get; set; } = "En cours";
 
         public int ClientId { get; set; }
-        public Client Client { get; set; } = null;
 
         public List<CommandeArticle> CommandeArticles { get; set; } = new();
     }
