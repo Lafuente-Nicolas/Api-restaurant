@@ -16,10 +16,10 @@ namespace Api_restaurant.Data
             if (!db.Clients.Any())
             {
                 var clientJson = File.ReadAllText("Data/clientsJson.json");
-                var clients = JsonSerializer.Deserialize<List<Client>>(clientJson);
-                if(clients != null)
+                var client = JsonSerializer.Deserialize<List<Client>>(clientJson);
+                if(client != null)
                 {
-                    db.Clients.AddRange(clients);
+                    db.Clients.AddRange(client);
                 }
             }
 
