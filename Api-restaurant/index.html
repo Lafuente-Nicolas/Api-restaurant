@@ -55,7 +55,7 @@
         </form>
 
         <div class="mt-12 max-w-lg mx-auto">
-            <h3 class="text-2xl font-semibold mb-4">📦 Commandes du client</h3>
+            <h3 class="text-2xl font-semibold mb-4">Consulter les Commandes d'un client</h3>
             <form id="fetchOrdersForm" class="flex gap-4 mb-6">
                 <input type="number" id="fetchClientId" placeholder="ID Client" class="border p-3 rounded flex-grow" required />
                 <button type="submit" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-3 rounded">Afficher commandes</button>
@@ -184,21 +184,36 @@
                 alert('Merci de renseigner un ID client valide.');
                 return;
             }
+
             try {
-                const res = await fetch(`${apiUrl}/commandes/client/${clientId}`);
+                const res = await fetch(`${apiUrl}/api/commandes/client?clientId=${clientId}`);
                 if (!res.ok) throw new Error('Erreur lors du chargement des commandes du client');
                 const commandes = await res.json();
 
                 const list = document.getElementById('ordersList');
                 list.innerHTML = '';
+
                 if (commandes.length === 0) {
                     list.innerHTML = '<li>Aucune commande trouvée pour ce client.</li>';
                     return;
                 }
+
                 commandes.forEach(cmd => {
-                    list.innerHTML += `<li>Commande #${cmd.id} - Date: ${new Date(cmd.dateCommande).toLocaleString()} - Articles: ${cmd.articles.map(a => a.nom).join(', ')}</li>`;
+                    const dateFormatted = new Date(cmd.date).toLocaleString('fr-FR');
+                    const montant = cmd.montantTotal?.toFixed(2) || '0.00';
+                    const statut = cmd.statutLivraison || 'Non défini';
+
+                    list.innerHTML += `
+                <li class="bg-gray-100 p-3 rounded mb-2">
+                    <strong>Commande #${cmd.id}</strong><br>
+                     Date: ${dateFormatted}<br>
+                     Montant: ${montant} €<br>
+                     Statut: ${statut}<br>
+                </li>
+            `;
                 });
             } catch (error) {
+                console.error('Erreur:', error);
                 alert(error.message);
             }
         });
