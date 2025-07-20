@@ -11,6 +11,16 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<RestaurantDb>(opt => opt.UseSqlite("Data Source=restaurant.db"));
 
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -31,6 +41,7 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 var app = builder.Build();
+app.UseCors();
 
 if (app.Environment.IsDevelopment())
 {
@@ -231,14 +242,20 @@ app.MapGet("/articles", async (RestaurantDb db) =>
 {
     var articles = await db.Articles.ToListAsync();
     return Results.Ok(articles);
-});
-
+})
+.WithName("ConsulterLesArticles")
+.WithTags("Articles")
+.WithMetadata(new SwaggerOperationAttribute(summary: "Permet de consulter les articles", description: "Permet de Consulter les articles du restaurant"));
 // GET articles par ID
 app.MapGet("/articles/{id}", async (int id, RestaurantDb db) =>
 {
     var articles = await db.Articles.FindAsync(id);
     return articles is not null ? Results.Ok(articles) : Results.NotFound();
-});
+})
+
+.WithName("ConsulterLesArticlesID")
+.WithTags("Articles")
+.WithMetadata(new SwaggerOperationAttribute(summary: "Permet de consulter les articles", description: "Permet de Consulter les articles par ID du restaurant"));
 
 // POST ajouter un article
 app.MapPost("/articles", async (Article article, RestaurantDb db) =>
@@ -246,7 +263,11 @@ app.MapPost("/articles", async (Article article, RestaurantDb db) =>
     db.Articles.Add(article);
     await db.SaveChangesAsync();
     return Results.Created($"/clients/{article.Id}", article);
-});
+})
+
+.WithName("AjouterDesArticles")
+.WithTags("Articles")
+.WithMetadata(new SwaggerOperationAttribute(summary: "Permet d'ajouter des articles", description: "Permet d'ajouter des articles du restaurant"));
 
 // PUT modifier un article
 app.MapPut("/articles/{id}", async (int id, Article updatedArticle, RestaurantDb db) =>
@@ -260,7 +281,11 @@ app.MapPut("/articles/{id}", async (int id, Article updatedArticle, RestaurantDb
 
     await db.SaveChangesAsync();
     return Results.Ok(article);
-});
+})
+
+.WithName("ModifierLesArticles")
+.WithTags("Articles")
+.WithMetadata(new SwaggerOperationAttribute(summary: "Permet de modifier les articles", description: "Permet de modifier les articles du restaurant"));
 
 // DELETE supprimer un article
 app.MapDelete("/articles/{id}", async (int id, RestaurantDb db) =>
@@ -271,7 +296,10 @@ app.MapDelete("/articles/{id}", async (int id, RestaurantDb db) =>
     db.Articles.Remove(article);
     await db.SaveChangesAsync();
     return Results.NoContent();
-});
+})
+.WithName("SupprimerDesArticles")
+.WithTags("Articles")
+.WithMetadata(new SwaggerOperationAttribute(summary: "Permet de supprimer Des articles", description: "Permet de supprimer des articles du restaurant"));
 
 DbInitializer.Database(app.Services);
 
