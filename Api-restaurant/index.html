@@ -91,17 +91,17 @@
 
 
                     const articleHTML = `
-              <div class="bg-white rounded shadow overflow-hidden flex flex-col">
-                <img src="${imageUrl}" alt="${a.nom}" class="w-full h-48 object-cover" />
-                <div class="p-4 flex-grow flex flex-col justify-between">
-                  <div>
-                    <h3 class="text-xl font-semibold mb-2">${a.nom}</h3>
-                    <p class="text-gray-600 mb-4">${a.categorie ?? ''}</p>
+                  <div class="bg-white rounded shadow overflow-hidden flex flex-col">
+                    <img src="${imageUrl}" alt="${a.nom}" class="w-full h-48 object-cover" />
+                    <div class="p-4 flex-grow flex flex-col justify-between">
+                      <div>
+                        <h3 class="text-xl font-semibold mb-2">${a.nom}</h3>
+                        <p class="text-gray-600 mb-4">${a.categorie ?? ''}</p>
+                      </div>
+                      <div class="text-red-600 font-bold text-lg">${a.prix.toFixed(2)} €</div>
+                    </div>
                   </div>
-                  <div class="text-red-600 font-bold text-lg">${a.prix.toFixed(2)} €</div>
-                </div>
-              </div>
-            `;
+                `;
                     container.insertAdjacentHTML('beforeend', articleHTML);
                 });
             } catch (error) {
@@ -142,4 +142,68 @@
             }
         });
 
+        // Création commande
+        document.getElementById('createOrderForm').addEventListener('submit', async e => {
+            e.preventDefault();
+            const clientId = parseInt(document.getElementById('clientId').value);
+            const articleIdsRaw = document.getElementById('articleIds').value;
+            const articleIds = articleIdsRaw.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
 
+            if (!clientId || articleIds.length === 0) {
+                alert('Merci de renseigner un ID client valide et au moins un ID article.');
+                return;
+            }
+
+            const dto = {
+                clientsId: clientId,
+                articleIds: articleIds,
+            };
+
+            try {
+                const res = await fetch(`${apiUrl}/api/commandes/creation`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dto),
+                });
+                if (!res.ok) {
+                    const errData = await res.json().catch(() => null);
+                    throw new Error(errData?.message || 'Erreur lors de la création de la commande');
+                }
+                alert('Commande créée !');
+                e.target.reset();
+            } catch (error) {
+                alert(error.message);
+            }
+        });
+
+        // Afficher commandes d’un client
+        document.getElementById('fetchOrdersForm').addEventListener('submit', async e => {
+            e.preventDefault();
+            const clientId = parseInt(document.getElementById('fetchClientId').value);
+            if (!clientId) {
+                alert('Merci de renseigner un ID client valide.');
+                return;
+            }
+            try {
+                const res = await fetch(`${apiUrl}/commandes/client/${clientId}`);
+                if (!res.ok) throw new Error('Erreur lors du chargement des commandes du client');
+                const commandes = await res.json();
+
+                const list = document.getElementById('ordersList');
+                list.innerHTML = '';
+                if (commandes.length === 0) {
+                    list.innerHTML = '<li>Aucune commande trouvée pour ce client.</li>';
+                    return;
+                }
+                commandes.forEach(cmd => {
+                    list.innerHTML += `<li>Commande #${cmd.id} - Date: ${new Date(cmd.dateCommande).toLocaleString()} - Articles: ${cmd.articles.map(a => a.nom).join(', ')}</li>`;
+                });
+            } catch (error) {
+                alert(error.message);
+            }
+        });
+
+    </script>
+
+</body>
+</html>
