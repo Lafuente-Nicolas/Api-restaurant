@@ -11,6 +11,16 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<RestaurantDb>(opt => opt.UseSqlite("Data Source=restaurant.db"));
 
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -31,6 +41,7 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 var app = builder.Build();
+app.UseCors();
 
 if (app.Environment.IsDevelopment())
 {
@@ -233,7 +244,7 @@ app.MapGet("/articles", async (RestaurantDb db) =>
     return Results.Ok(articles);
 })
 .WithName("ConsulterLesArticles")
-.WithTags("Article")
+.WithTags("Articles")
 .WithMetadata(new SwaggerOperationAttribute(summary: "Permet de consulter les articles", description: "Permet de Consulter les articles du restaurant"));
 // GET articles par ID
 app.MapGet("/articles/{id}", async (int id, RestaurantDb db) =>

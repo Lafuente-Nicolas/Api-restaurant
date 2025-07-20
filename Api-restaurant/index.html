@@ -2,216 +2,69 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <title>Restaurant Front - Gestion</title>
+  <title>Restaurant Gourmet - Gestion</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 p-8">
+<body class="bg-white text-gray-800">
 
-  <h1 class="text-4xl font-bold mb-6 text-center">🍽️ Restaurant - Gestion</h1>
-
-  <!-- Section Articles -->
-  <section class="mb-12">
-    <h2 class="text-2xl font-semibold mb-4">📋 Liste des articles</h2>
-    <button id="loadArticles" class="bg-blue-600 text-white px-5 py-2 rounded hover:bg-blue-700 mb-4">Charger les articles</button>
-    <table class="min-w-full bg-white rounded shadow overflow-hidden">
-      <thead class="bg-blue-200">
-        <tr>
-          <th class="text-left px-4 py-2">ID</th>
-          <th class="text-left px-4 py-2">Nom</th>
-          <th class="text-left px-4 py-2">Prix (€)</th>
-          <th class="text-left px-4 py-2">Catégorie</th>
-        </tr>
-      </thead>
-      <tbody id="articlesTableBody"></tbody>
-    </table>
+  <!-- HERO -->
+  <section class="relative bg-cover bg-center h-[70vh]" style="background-image: url('img/pizzeria.jpg');">
+    <div class="absolute inset-0 bg-black bg-opacity-50 flex flex-col justify-center items-center text-white px-4 text-center">
+      <h1 class="text-5xl md:text-7xl font-bold mb-4">Bienvenue au Gourmet</h1>
+      <p class="text-xl md:text-2xl mb-8">Savourez une expérience culinaire unique</p>
+      <a href="#menu" class="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded text-lg">Découvrir notre menu</a>
+    </div>
   </section>
 
-  <!-- Section Clients -->
-  <section class="mb-12">
-    <h2 class="text-2xl font-semibold mb-4">🧑 Ajouter un client</h2>
-    <form id="addClientForm" class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl">
-      <input type="text" id="nom" placeholder="Nom *" class="border p-2 rounded" required>
-      <input type="text" id="prenom" placeholder="Prénom *" class="border p-2 rounded" required>
-      <input type="text" id="telephone" placeholder="Téléphone *" class="border p-2 rounded" required>
-      <input type="email" id="email" placeholder="Email *" class="border p-2 rounded" required>
-      <input type="text" id="numeroDeRue" placeholder="Numéro de rue" class="border p-2 rounded">
-      <input type="text" id="nomDeRue" placeholder="Nom de rue" class="border p-2 rounded">
-      <input type="text" id="codePostal" placeholder="Code postal" class="border p-2 rounded">
-      <input type="text" id="ville" placeholder="Ville" class="border p-2 rounded">
+  <!-- MENU -->
+  <section id="menu" class="py-16 px-4 max-w-6xl mx-auto">
+    <h2 class="text-4xl font-bold text-center mb-12">Notre Menu</h2>
+    <div id="articlesGrid" class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <!-- Les plats seront insérés ici -->
+    </div>
+    <div class="text-center mt-8">
+      <button id="loadArticlesBtn" class="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded text-lg">Charger les plats</button>
+    </div>
+  </section>
+
+  <!-- CLIENTS -->
+  <section id="clients" class="py-16 px-4 max-w-6xl mx-auto">
+    <h2 class="text-4xl font-bold text-center mb-8">Ajouter un client</h2>
+    <form id="addClientForm" class="max-w-xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
+      <input type="text" id="nom" placeholder="Nom *" class="border p-3 rounded" required />
+      <input type="text" id="prenom" placeholder="Prénom *" class="border p-3 rounded" required />
+      <input type="text" id="telephone" placeholder="Téléphone *" class="border p-3 rounded" required />
+      <input type="email" id="email" placeholder="Email *" class="border p-3 rounded" required />
+      <input type="text" id="numeroDeRue" placeholder="Numéro de rue" class="border p-3 rounded" />
+      <input type="text" id="nomDeRue" placeholder="Nom de rue" class="border p-3 rounded" />
+      <input type="text" id="codePostal" placeholder="Code postal" class="border p-3 rounded" />
+      <input type="text" id="ville" placeholder="Ville" class="border p-3 rounded" />
       <div class="md:col-span-2 text-right">
-        <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">Ajouter le client</button>
+        <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded">Ajouter le client</button>
       </div>
     </form>
-
-    <div class="mt-8">
-      <h3 class="text-xl font-semibold mb-2">👥 Liste des clients</h3>
-      <button id="loadClients" class="bg-indigo-600 text-white px-5 py-2 rounded hover:bg-indigo-700 mb-4">Charger les clients</button>
-      <table class="min-w-full bg-white rounded shadow overflow-hidden">
-        <thead class="bg-indigo-200">
-          <tr>
-            <th class="text-left px-4 py-2">ID</th>
-            <th class="text-left px-4 py-2">Nom</th>
-            <th class="text-left px-4 py-2">Prénom</th>
-            <th class="text-left px-4 py-2">Téléphone</th>
-            <th class="text-left px-4 py-2">Email</th>
-          </tr>
-        </thead>
-        <tbody id="clientsTableBody"></tbody>
-      </table>
-    </div>
   </section>
 
-  <!-- Section Commandes -->
-  <section>
-    <h2 class="text-2xl font-semibold mb-4">🧾 Créer une commande</h2>
-    <form id="createOrderForm" class="max-w-lg space-y-4">
-      <input type="number" id="clientId" placeholder="ID Client *" class="border p-2 rounded w-full" required>
-      <input type="text" id="articleIds" placeholder="IDs Articles (séparés par des virgules) *" class="border p-2 rounded w-full" required>
-      <button type="submit" class="bg-purple-600 text-white px-6 py-2 rounded hover:bg-purple-700">Créer la commande</button>
+  <!-- COMMANDES -->
+  <section id="orders" class="py-16 px-4 max-w-6xl mx-auto">
+    <h2 class="text-4xl font-bold text-center mb-8">Créer une commande</h2>
+    <form id="createOrderForm" class="max-w-lg mx-auto grid gap-6">
+      <input type="number" id="clientId" placeholder="ID Client *" class="border p-3 rounded" required />
+      <input type="text" id="articleIds" placeholder="IDs Articles (séparés par des virgules) *" class="border p-3 rounded" required />
+      <button type="submit" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded">Créer la commande</button>
     </form>
 
-    <div class="mt-8 max-w-lg">
-      <h3 class="text-xl font-semibold mb-2">📦 Commandes du client</h3>
-      <form id="fetchOrdersForm" class="flex gap-2 mb-4">
-        <input type="number" id="fetchClientId" placeholder="ID Client" class="border p-2 rounded flex-grow" required>
-        <button type="submit" class="bg-teal-600 text-white px-4 py-2 rounded hover:bg-teal-700">Afficher commandes</button>
+    <div class="mt-12 max-w-lg mx-auto">
+      <h3 class="text-2xl font-semibold mb-4">📦 Commandes du client</h3>
+      <form id="fetchOrdersForm" class="flex gap-4 mb-6">
+        <input type="number" id="fetchClientId" placeholder="ID Client" class="border p-3 rounded flex-grow" required />
+        <button type="submit" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-3 rounded">Afficher commandes</button>
       </form>
-      <ul id="ordersList" class="list-disc pl-5 space-y-2"></ul>
+      <ul id="ordersList" class="list-disc pl-5 space-y-2 text-gray-700"></ul>
     </div>
   </section>
 
-  <script>
-    const apiUrl = "https://localhost:7074"; // Adapte ici ton URL / port backend
+  <footer class="bg-gray-800 text-white text-center py-6">
+    <p>&copy; 2025 Restaurant Gourmet. Tous droits réservés.</p>
+  </footer>
 
-    // Charger les articles dans le tableau
-    document.getElementById('loadArticles').addEventListener('click', async () => {
-      const res = await fetch(`${apiUrl}/articles`);
-      if (!res.ok) {
-        alert("Erreur lors du chargement des articles");
-        return;
-      }
-      const articles = await res.json();
-      const tbody = document.getElementById('articlesTableBody');
-      tbody.innerHTML = "";
-      articles.forEach(a => {
-        tbody.innerHTML += `
-          <tr class="border-b">
-            <td class="px-4 py-2">${a.id}</td>
-            <td class="px-4 py-2">${a.nom}</td>
-            <td class="px-4 py-2">${a.prix.toFixed(2)}</td>
-            <td class="px-4 py-2">${a.categorie}</td>
-          </tr>`;
-      });
-    });
-
-    // Ajouter un client
-    document.getElementById('addClientForm').addEventListener('submit', async e => {
-      e.preventDefault();
-      const client = {
-        nom: document.getElementById('nom').value,
-        prenom: document.getElementById('prenom').value,
-        telephone: document.getElementById('telephone').value,
-        email: document.getElementById('email').value,
-        numeroDeRue: document.getElementById('numeroDeRue').value,
-        nomDeRue: document.getElementById('nomDeRue').value,
-        codePostal: document.getElementById('codePostal').value,
-        ville: document.getElementById('ville').value,
-      };
-
-      const res = await fetch(`${apiUrl}/clients`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(client)
-      });
-
-      if (res.ok) {
-        alert("Client ajouté !");
-        e.target.reset();
-        loadClients(); // Recharge la liste des clients
-      } else {
-        alert("Erreur lors de l'ajout du client.");
-      }
-    });
-
-    // Charger les clients dans le tableau
-    async function loadClients() {
-      const res = await fetch(`${apiUrl}/clients`);
-      if (!res.ok) {
-        alert("Erreur lors du chargement des clients");
-        return;
-      }
-      const clients = await res.json();
-      const tbody = document.getElementById('clientsTableBody');
-      tbody.innerHTML = "";
-      clients.forEach(c => {
-        tbody.innerHTML += `
-          <tr class="border-b">
-            <td class="px-4 py-2">${c.id}</td>
-            <td class="px-4 py-2">${c.nom}</td>
-            <td class="px-4 py-2">${c.prenom}</td>
-            <td class="px-4 py-2">${c.telephone}</td>
-            <td class="px-4 py-2">${c.email ?? ''}</td>
-          </tr>`;
-      });
-    }
-
-    document.getElementById('loadClients').addEventListener('click', loadClients);
-
-    // Créer une commande
-    document.getElementById('createOrderForm').addEventListener('submit', async e => {
-      e.preventDefault();
-
-      const dto = {
-        clientsId: parseInt(document.getElementById('clientId').value),
-        articleIds: document.getElementById('articleIds').value.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id))
-      };
-
-      if (!dto.clientsId || dto.articleIds.length === 0) {
-        alert("Merci de renseigner un ID client valide et au moins un ID article.");
-        return;
-      }
-
-      const res = await fetch(`${apiUrl}/api/commandes/creation`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(dto)
-      });
-
-      if (res.ok) {
-        alert("Commande créée !");
-        e.target.reset();
-      } else {
-        const errorData = await res.json().catch(() => null);
-        alert("Erreur lors de la création de la commande." + (errorData?.message ? "\n" + errorData.message : ""));
-      }
-    });
-
-    // Afficher les commandes d'un client
-    document.getElementById('fetchOrdersForm').addEventListener('submit', async e => {
-      e.preventDefault();
-      const clientId = parseInt(document.getElementById('fetchClientId').value);
-      if (!clientId) {
-        alert("Merci de renseigner un ID client valide.");
-        return;
-      }
-
-      const res = await fetch(`${apiUrl}/commandes/client/${clientId}`);
-      if (!res.ok) {
-        alert("Erreur lors du chargement des commandes du client.");
-        return;
-      }
-      const commandes = await res.json();
-      const list = document.getElementById('ordersList');
-      list.innerHTML = "";
-      if (commandes.length === 0) {
-        list.innerHTML = "<li>Aucune commande trouvée pour ce client.</li>";
-        return;
-      }
-      commandes.forEach(cmd => {
-        list.innerHTML += `<li>Commande #${cmd.id} - Date: ${new Date(cmd.dateCommande).toLocaleString()} - Articles: ${cmd.articles.map(a => a.nom).join(", ")}</li>`;
-      });
-    });
-  </script>
-
-</body>
-</html>
