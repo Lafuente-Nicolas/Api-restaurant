@@ -171,18 +171,44 @@ app.MapPost("api/commandes/creation", async (CommandeItemDTO dto, RestaurantDb d
 .WithTags("Commandes")
 .WithMetadata(new SwaggerOperationAttribute(summary: "Crée une nouvelle commande", description: "Ajoute une commande dans la base de données"));
 
+
+// Endpoint pour Consulter toutes les commandes passées
+
+app.MapGet("api/commandes/", async (RestaurantDb db) =>
+{
+    var commandes = await db.Commandes.ToListAsync();
+    return Results.Ok(commandes);
+})
+.WithName("RechercherToutesLesCommandes")
+.WithTags("Commandes")
+.WithMetadata(new SwaggerOperationAttribute(summary: "Afficher toutes les commandes", description: "Afficher tous les commandes qui se trouvent dans la base de données"));
+
+
 // Endpoint pour Consulter les commandes d'un client
 
 app.MapGet("api/commandes/client", async (int clientId, RestaurantDb db) =>
 {
     var commandes = await db.Commandes
         .Where(c => c.ClientId == clientId)
-        .Include(c => c.CommandeArticles).ThenInclude(ca => ca.ArticleId)
+        .Select(c => new
+        {
+            c.Id,
+            c.ClientId,
+            c.Date,
+            c.MontantTotal,
+            c.StatutLivraison,
+            Articles = db.CommandeArticles
+                .Where(ca => ca.CommandeId == c.Id)
+                .Join(db.Articles,
+                      ca => ca.ArticleId,
+                      a => a.Id,
+                      (ca, a) => a)
+                .ToList()
+        })
         .ToListAsync();
 
     return Results.Ok(commandes);
 })
-
 .WithName("ConsulterCommandeClient")
 .WithTags("Commandes")
 .WithMetadata(new SwaggerOperationAttribute(summary: "Consulter les commandes d'un client", description: "Permet de Consulter les commandes d'un client par ID du client"));
@@ -193,7 +219,39 @@ app.MapGet("api/commandes/date", async (DateTime date, RestaurantDb db) =>
 {
     var commandes = await db.Commandes
         .Where(c => c.Date.Date == date.Date)
-        .Include(c => c.CommandeArticles).ThenInclude(ca => ca.ArticleId)
+        .Select(c => new
+        {
+            Id = c.Id,
+            ClientId = c.ClientId,
+            Date = c.Date,
+            MontantTotal = c.MontantTotal,
+            StatutLivraison = c.StatutLivraison,
+
+            Articles = db.CommandeArticles
+                .Where(ca => ca.CommandeId == c.Id)
+                .Join(db.Articles,
+                      ca => ca.ArticleId,
+                      a => a.Id,
+                      (ca, a) => new
+                      {
+                          Id = a.Id,
+                          Nom = a.Nom,
+                          Prix = a.Prix,
+                          Categorie = a.Categorie
+                      })
+                .ToList(),
+
+            Client = db.Clients
+                .Where(client => client.Id == c.ClientId)
+                .Select(client => new
+                {
+                    Id = client.Id,
+                    Nom = client.Nom,
+                    Prenom = client.Prenom,
+                    Telephone = client.Telephone
+                })
+                .FirstOrDefault()
+        })
         .ToListAsync();
 
     return Results.Ok(commandes);
