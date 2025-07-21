@@ -1,6 +1,365 @@
-var builder = WebApplication.CreateBuilder(args);
-var app = builder.Build();
+using Api_restaurant.Classes;
+using Api_restaurant.Data;
+using Api_restaurant.Dto;
+using Api_restaurant.DTO;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.Annotations;
+using System;
 
-app.MapGet("/", () => "Hello World!");
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddDbContext<RestaurantDb>(opt => opt.UseSqlite("Data Source=restaurant.db"));
+
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
+
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Restaurant API",
+        Version = "v1",
+        Description = "Une API pour gérer les commandes d'un restaurant",
+        Contact = new OpenApiContact
+        {
+            Name = "Loïc, Abdellah , Othman, Nicolas",
+            Email = "nephtyse19@hotmail.fr",
+            Url = new Uri("https://github.com/abdellah59/Api-restaurant")
+        }
+    });
+    // Activer les annotations swagger
+    c.EnableAnnotations();
+});
+
+var app = builder.Build();
+app.UseCors();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Restaurant API V1");
+        c.RoutePrefix = "";
+    });
+}
+
+// ENDPOINTS POUR LA GESTION DES CLIENTS
+
+// GET tous les clients
+app.MapGet("/clients", async (RestaurantDb db) =>
+{
+    var clients = await db.Clients.ToListAsync();
+    return Results.Ok(clients);
+})
+
+.WithName("RechercherTousLesClients")
+.WithTags("Clients")
+.WithMetadata(new SwaggerOperationAttribute(summary: "Afficher tous les clients", description: "Afficher tous les clients qui se trouvent dans la base de données"));
+
+// GET client par ID
+app.MapGet("/clients/{id}", async (int id, RestaurantDb db) =>
+{
+    var client = await db.Clients.FindAsync(id);
+    return client is not null ? Results.Ok(client) : Results.NotFound();
+})
+
+.WithName("RechercherClientsId")
+.WithTags("Clients")
+.WithMetadata(new SwaggerOperationAttribute(summary: "Rechercher un client par ID", description: "Rechercher un client par son ID dans la base de données"));
+
+// POST ajouter un client
+app.MapPost("/clients", async (Client client, RestaurantDb db) =>
+{
+    db.Clients.Add(client);
+    await db.SaveChangesAsync();
+    return Results.Created($"/clients/{client.Id}", client);
+})
+
+.WithName("CreationClients")
+.WithTags("Clients")
+.WithMetadata(new SwaggerOperationAttribute(summary: "Crée un nouveau client", description: "Ajoute un client à la base de données"));
+
+// PUT modifier un client
+app.MapPut("/clients/{id}", async (int id, Client updatedClient, RestaurantDb db) =>
+{
+    var client = await db.Clients.FindAsync(id);
+    if (client is null) return Results.NotFound();
+
+    client.Nom = updatedClient.Nom;
+    client.Prenom = updatedClient.Prenom;
+    client.NumeroDeRue = updatedClient.NumeroDeRue;
+    client.NomDeRue = updatedClient.NomDeRue;
+    client.CodePostal = updatedClient.CodePostal;
+    client.Ville = updatedClient.Ville;
+    client.Telephone = updatedClient.Telephone;
+
+    await db.SaveChangesAsync();
+    return Results.Ok(client);
+})
+
+.WithName("ModifierClients")
+.WithTags("Clients")
+.WithMetadata(new SwaggerOperationAttribute(summary: "Modifier les données d'un client", description: "Modifier toutes les données qui composent un client"));
+
+// DELETE supprimer un client
+app.MapDelete("/clients/{id}", async (int id, RestaurantDb db) =>
+{
+    var client = await db.Clients.FindAsync(id);
+    if (client is null) return Results.NotFound();
+
+    db.Clients.Remove(client);
+    await db.SaveChangesAsync();
+    return Results.NoContent();
+})
+
+.WithName("SupprimerClients")
+.WithTags("Clients")
+.WithMetadata(new SwaggerOperationAttribute(summary: "Supprimer un client", description: "Supprimer un client de la base de donnée"));
+
+// ENDPOINTS POUR LA GESTION DES COMMANDES
+
+// Endpoint pour creer une commande
+
+app.MapPost("api/commandes/creation", async (CommandeItemDTO dto, RestaurantDb db) =>
+{
+    if (dto.ArticleIds == null || !dto.ArticleIds.Any())
+    {
+        return Results.BadRequest("Une commande doit contenir au moins un article.");
+    }
+
+    var client = await db.Clients.FindAsync(dto.ClientsId);
+    if (client == null)
+        return Results.NotFound("Client introuvable");
+
+    var articles = await db.Articles
+        .Where(a => dto.ArticleIds.Contains(a.Id))
+        .ToListAsync();
+
+    if (articles.Count != dto.ArticleIds.Count)
+        return Results.BadRequest("Un ou plusieurs articles sont invalides");
+
+    var montantTotal = articles.Sum(a => a.Prix);
+
+    var commande = new Commande
+    {
+        ClientId = dto.ClientsId,
+        CommandeArticles = dto.ArticleIds.Select(id => new CommandeArticle
+        {
+            ArticleId = id
+        }).ToList(),
+        MontantTotal = montantTotal,
+        StatutLivraison = "En cours"
+    };
+
+    db.Commandes.Add(commande);
+    await db.SaveChangesAsync();
+
+    return Results.Created($"/commandes/{commande.Id}", commande);
+})
+
+.WithName("CreationCommande")
+.WithTags("Commandes")
+.WithMetadata(new SwaggerOperationAttribute(summary: "Crée une nouvelle commande", description: "Ajoute une commande dans la base de données"));
+
+
+// Endpoint pour Consulter toutes les commandes passées
+
+app.MapGet("api/commandes/", async (RestaurantDb db) =>
+{
+    var commandes = await db.Commandes.ToListAsync();
+    return Results.Ok(commandes);
+})
+.WithName("RechercherToutesLesCommandes")
+.WithTags("Commandes")
+.WithMetadata(new SwaggerOperationAttribute(summary: "Afficher toutes les commandes", description: "Afficher tous les commandes qui se trouvent dans la base de données"));
+
+
+// Endpoint pour Consulter les commandes d'un client
+
+app.MapGet("api/commandes/client", async (int clientId, RestaurantDb db) =>
+{
+    var commandes = await db.Commandes
+        .Where(c => c.ClientId == clientId)
+        .Select(c => new
+        {
+            c.Id,
+            c.ClientId,
+            c.Date,
+            c.MontantTotal,
+            c.StatutLivraison,
+            Articles = db.CommandeArticles
+                .Where(ca => ca.CommandeId == c.Id)
+                .Join(db.Articles,
+                      ca => ca.ArticleId,
+                      a => a.Id,
+                      (ca, a) => a)
+                .ToList()
+        })
+        .ToListAsync();
+
+    return Results.Ok(commandes);
+})
+.WithName("ConsulterCommandeClient")
+.WithTags("Commandes")
+.WithMetadata(new SwaggerOperationAttribute(summary: "Consulter les commandes d'un client", description: "Permet de Consulter les commandes d'un client par ID du client"));
+
+// Endpoint pour Consulter les commandes par date
+
+app.MapGet("api/commandes/date", async (DateTime date, RestaurantDb db) =>
+{
+    var commandes = await db.Commandes
+        .Where(c => c.Date.Date == date.Date)
+        .Select(c => new
+        {
+            Id = c.Id,
+            ClientId = c.ClientId,
+            Date = c.Date,
+            MontantTotal = c.MontantTotal,
+            StatutLivraison = c.StatutLivraison,
+
+            Articles = db.CommandeArticles
+                .Where(ca => ca.CommandeId == c.Id)
+                .Join(db.Articles,
+                      ca => ca.ArticleId,
+                      a => a.Id,
+                      (ca, a) => new
+                      {
+                          Id = a.Id,
+                          Nom = a.Nom,
+                          Prix = a.Prix,
+                          Categorie = a.Categorie
+                      })
+                .ToList(),
+
+            Client = db.Clients
+                .Where(client => client.Id == c.ClientId)
+                .Select(client => new
+                {
+                    Id = client.Id,
+                    Nom = client.Nom,
+                    Prenom = client.Prenom,
+                    Telephone = client.Telephone
+                })
+                .FirstOrDefault()
+        })
+        .ToListAsync();
+
+    return Results.Ok(commandes);
+})
+.WithName("ConsulterCommandeDate")
+.WithTags("Commandes")
+.WithMetadata(new SwaggerOperationAttribute(summary: "Consulter les commandes par date", description: "Permet de Consulter les commandes réalisées par date "));
+
+// Endpoint pot Modifier le statut de livraison
+
+app.MapPut("api/commandes/statut", async (int id, string nouveauStatut, RestaurantDb db) =>
+{
+    var commande = await db.Commandes.FindAsync(id);
+    if (commande == null)
+        return Results.NotFound();
+
+    commande.StatutLivraison = nouveauStatut;
+    await db.SaveChangesAsync();
+
+    return Results.Ok(commande);
+})
+
+.WithName("ModifierStatutLivraison")
+.WithTags("Commandes")
+.WithMetadata(new SwaggerOperationAttribute(summary: "Modifier le statut de livraison", description: "Permet de Modifier le statut de livraison des commandes réalisées par ID"));
+
+// Commandes en attente de livraison
+
+app.MapGet("api/commandes/en-cours", async (RestaurantDb db) =>
+{
+    var commandes = await db.Commandes
+        .Where(c => c.StatutLivraison == "En cours")
+        .ToListAsync();
+
+    return Results.Ok(commandes);
+})
+
+.WithName("ConsulterCommandeEncours")
+.WithTags("Commandes")
+.WithMetadata(new SwaggerOperationAttribute(summary: "Modifier le statut de livraison", description: "Permet de Consulter les commandes en cours"));
+
+// ENDPOINTS POUR LA GESTION DES ARTICLES
+
+// GET tous les articles
+app.MapGet("/articles", async (RestaurantDb db) =>
+{
+    var articles = await db.Articles.ToListAsync();
+    return Results.Ok(articles);
+})
+.WithName("ConsulterLesArticles")
+.WithTags("Articles")
+.WithMetadata(new SwaggerOperationAttribute(summary: "Permet de consulter les articles", description: "Permet de Consulter les articles du restaurant"));
+// GET articles par ID
+app.MapGet("/articles/{id}", async (int id, RestaurantDb db) =>
+{
+    var articles = await db.Articles.FindAsync(id);
+    return articles is not null ? Results.Ok(articles) : Results.NotFound();
+})
+
+.WithName("ConsulterLesArticlesID")
+.WithTags("Articles")
+.WithMetadata(new SwaggerOperationAttribute(summary: "Permet de consulter les articles", description: "Permet de Consulter les articles par ID du restaurant"));
+
+// POST ajouter un article
+app.MapPost("/articles", async (Article article, RestaurantDb db) =>
+{
+    db.Articles.Add(article);
+    await db.SaveChangesAsync();
+    return Results.Created($"/clients/{article.Id}", article);
+})
+
+.WithName("AjouterDesArticles")
+.WithTags("Articles")
+.WithMetadata(new SwaggerOperationAttribute(summary: "Permet d'ajouter des articles", description: "Permet d'ajouter des articles du restaurant"));
+
+// PUT modifier un article
+app.MapPut("/articles/{id}", async (int id, Article updatedArticle, RestaurantDb db) =>
+{
+    var article = await db.Articles.FindAsync(id);
+    if (article is null) return Results.NotFound();
+
+    article.Nom = updatedArticle.Nom;
+    article.Prix = updatedArticle.Prix;
+    article.Categorie = updatedArticle.Categorie;
+
+    await db.SaveChangesAsync();
+    return Results.Ok(article);
+})
+
+.WithName("ModifierLesArticles")
+.WithTags("Articles")
+.WithMetadata(new SwaggerOperationAttribute(summary: "Permet de modifier les articles", description: "Permet de modifier les articles du restaurant"));
+
+// DELETE supprimer un article
+app.MapDelete("/articles/{id}", async (int id, RestaurantDb db) =>
+{
+    var article = await db.Articles.FindAsync(id);
+    if (article is null) return Results.NotFound();
+
+    db.Articles.Remove(article);
+    await db.SaveChangesAsync();
+    return Results.NoContent();
+})
+.WithName("SupprimerDesArticles")
+.WithTags("Articles")
+.WithMetadata(new SwaggerOperationAttribute(summary: "Permet de supprimer Des articles", description: "Permet de supprimer des articles du restaurant"));
+
+DbInitializer.Database(app.Services);
 
 app.Run();
+
